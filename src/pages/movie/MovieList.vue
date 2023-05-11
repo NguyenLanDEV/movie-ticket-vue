@@ -1,6 +1,5 @@
 <template>
   <ModalComponent class="editable-add-btn" style="margin-bottom: 8px" v-show="showModal">
-    <MovieCreate v-show="showModal">ssaasdasd</MovieCreate>
   </ModalComponent>
   <a-table :columns="columns" :data-source="dataSource" bordered>
     <template #bodyCell="{ column, text, record }">
@@ -26,6 +25,13 @@
           </span>
           <span v-else>
             <a @click="edit(record.key)">Edit</a>
+            <a-popconfirm
+              v-if="dataSource.length"
+              title="Sure to delete?"
+              @confirm="onDelete(record.key)"
+            >
+              <a>Delete</a>
+            </a-popconfirm>
           </span>
         </div>
       </template>
@@ -37,7 +43,6 @@ import { cloneDeep } from 'lodash-es'
 import { defineComponent, reactive, ref } from 'vue'
 import type { UnwrapRef } from 'vue'
 import ModalComponent from '../../components/Modal/ModalComponent.vue'
-import MovieCreate from '../../components/Modal/MovieCreate.vue'
 
 const columns = [
   {
@@ -77,8 +82,7 @@ for (let i = 0; i < 100; i++) {
 }
 export default defineComponent({
   components: {
-    ModalComponent,
-    MovieCreate
+    ModalComponent
   },
   setup() {
     const visible = ref<boolean>(false)
@@ -87,6 +91,10 @@ export default defineComponent({
 
     const edit = (key: string) => {
       editableData[key] = cloneDeep(dataSource.value.filter((item) => key === item.key)[0])
+    }
+
+    const onDelete = (key: string) => {
+      dataSource.value = dataSource.value.filter((item) => item.key !== key)
     }
     const save = (key: string) => {
       Object.assign(dataSource.value.filter((item) => key === item.key)[0], editableData[key])
@@ -106,6 +114,7 @@ export default defineComponent({
       edit,
       save,
       cancel,
+      onDelete,
       showModal
     }
   }

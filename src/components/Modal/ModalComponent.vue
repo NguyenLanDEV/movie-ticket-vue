@@ -1,22 +1,23 @@
 <template>
   <div>
     <a-button type="primary" @click="showModal">Add</a-button>
-    <a-modal v-model:visible="visible" title="Title" @ok="handleOk">
+    <a-modal v-model:visible="visible" title="Add" @ok="handleOk">
       <template #footer>
         <a-button key="back" @click="handleCancel">Return</a-button>
         <a-button key="submit" type="primary" :loading="loading" @click="handleOk">Submit</a-button>
       </template>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
+      <MovieCreate></MovieCreate>
     </a-modal>
   </div>
 </template>
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
+import MovieCreate from '../../components/Modal/MovieCreate.vue'
+
 export default defineComponent({
+  components: {
+    MovieCreate
+  },
   setup() {
     const loading = ref<boolean>(false)
     const visible = ref<boolean>(false)

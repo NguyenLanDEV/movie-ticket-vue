@@ -19,7 +19,7 @@
         <a-breadcrumb-item>List</a-breadcrumb-item>
       </a-breadcrumb>
       <div :style="{ background: '#fff', padding: '24px', minHeight: '750px' }">
-        <ListMovie></ListMovie>
+        <MovieList></MovieList>
       </div>
     </a-layout-content>
     <a-layout-footer :style="{ textAlign: 'center' }"> </a-layout-footer>
@@ -27,11 +27,11 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import ListMovie from '../pages/movie/ListMovie.vue'
+import MovieList from '../pages/movie/MovieList.vue'
 
 export default defineComponent({
   components: {
-    ListMovie
+    MovieList
   },
   setup() {
     return {
