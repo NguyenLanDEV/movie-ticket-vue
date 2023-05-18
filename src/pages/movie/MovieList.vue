@@ -96,6 +96,7 @@ export default defineComponent({
     const onDelete = (key: string) => {
       dataSource.value = dataSource.value.filter((item) => item.key !== key)
     }
+    
     const save = (key: string) => {
       Object.assign(dataSource.value.filter((item) => key === item.key)[0], editableData[key])
       delete editableData[key]
