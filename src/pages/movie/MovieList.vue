@@ -1,6 +1,14 @@
 <template>
-  <ModalComponent class="editable-add-btn" style="margin-bottom: 8px" v-show="showModal">
-  </ModalComponent>
+  <div class="editable-add-btn" style="margin-bottom: 8px" v-show="showModal">
+    <a-button type="primary" @click="showModal">Add Movie</a-button>
+    <a-modal v-model:visible="visible" title="Add" width="800px" @ok="handleOk">
+      <MovieCreate></MovieCreate>
+      <template #footer>
+        <a-button key="back" @click="handleCancel">Return</a-button>
+        <a-button key="submit" type="primary" :loading="loading" @click="handleOk">Submit</a-button>
+      </template>
+    </a-modal>
+  </div>
   <a-table :columns="columns" :data-source="dataSource" bordered>
     <template #bodyCell="{ column, text, record }">
       <template v-if="['name', 'age', 'address'].includes(column.dataIndex)">
@@ -39,10 +47,9 @@
   </a-table>
 </template>
 <script lang="ts">
-import { cloneDeep } from 'lodash-es'
 import { defineComponent, reactive, ref } from 'vue'
 import type { UnwrapRef } from 'vue'
-import ModalComponent from '../../components/Modal/ModalComponent.vue'
+import MovieCreate from '../../pages/movie/MovieCreate.vue'
 
 const columns = [
   {
@@ -82,15 +89,17 @@ for (let i = 0; i < 100; i++) {
 }
 export default defineComponent({
   components: {
-    ModalComponent
+    MovieCreate
   },
   setup() {
+    const loading = ref<boolean>(false)
     const visible = ref<boolean>(false)
     const dataSource = ref(data)
     const editableData: UnwrapRef<Record<string, DataItem>> = reactive({})
 
     const edit = (key: string) => {
-      editableData[key] = cloneDeep(dataSource.value.filter((item) => key === item.key)[0])
+      visible.value = true
+      // editableData[key] = cloneDeep(dataSource.value.filter((item) => key === item.key)[0])
     }
 
     const onDelete = (key: string) => {
@@ -107,16 +116,32 @@ export default defineComponent({
     const showModal = () => {
       visible.value = true
     }
+
+    const handleOk = () => {
+      loading.value = true
+      setTimeout(() => {
+        loading.value = false
+        visible.value = false
+      }, 2000)
+    }
+
+    const handleCancel = () => {
+      visible.value = false
+    }
     return {
       dataSource,
       columns,
       editingKey: '',
       editableData,
+      loading,
+      visible,
       edit,
       save,
       cancel,
       onDelete,
-      showModal
+      showModal,
+      handleOk,
+      handleCancel
     }
   }
 })

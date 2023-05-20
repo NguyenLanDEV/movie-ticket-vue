@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-button type="primary" @click="showModal">Add</a-button>
+    <a-button type="primary" @click="showModal">Add Movie</a-button>
     <a-modal v-model:visible="visible" title="Add" width="800px" @ok="handleOk">
       <template #footer>
         <a-button key="back" @click="handleCancel">Return</a-button>

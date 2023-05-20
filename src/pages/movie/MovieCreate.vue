@@ -57,12 +57,14 @@
       >
         <a-button>
           <upload-outlined></upload-outlined>
-          Click to Upload
+          Click to Uploads
         </a-button>
       </a-upload>
       </a-form-item>
-   
+     
   </a-form>
+  <a-button key="back" @click="handleCancel">Return</a-button>
+  <a-button  key="submit" type="primary" @click="submitForm">Submit</a-button>
 </template>
 <script lang="ts">
 import { message, type SelectProps, type UploadChangeParam } from 'ant-design-vue';
@@ -117,7 +119,7 @@ export default defineComponent({
       }
     };
 
-    const onSubmit = () => {
+    const submitForm = () => {
       console.log('submit!', toRaw(formState))
     }
 
@@ -169,7 +171,7 @@ export default defineComponent({
         span: 14
       },
       formState,
-      onSubmit
+      submitForm
     }
   }
 })
