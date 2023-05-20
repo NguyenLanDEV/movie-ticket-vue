@@ -25,7 +25,7 @@
     <a-form-item :wrapper-col="{ span: 14, offset: 4 }"> </a-form-item>
   </a-form>
 </template>
-<script>
+<script lang="ts">
 import { defineComponent, reactive, toRaw } from 'vue'
 export default defineComponent({
   setup() {

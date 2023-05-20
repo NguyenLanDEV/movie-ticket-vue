@@ -12,7 +12,7 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import MovieCreate from '../../components/Modal/MovieCreate.vue'
+import MovieCreate from '../../pages/movie/MovieCreate.vue'
 
 export default defineComponent({
   components: {
