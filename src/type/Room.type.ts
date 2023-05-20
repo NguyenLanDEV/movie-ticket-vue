@@ -1,4 +1,3 @@
-import { BasicListRequest, BasicRequest, BasicResponse } from './Common.type'
 
 interface Room {
     _id: string;
@@ -11,7 +10,7 @@ interface Room {
 /**
  * Response
  */
-interface RoomListResponse extends BasicResponse {
+interface RoomListResponse  {
   items: Room[]
   total_record: number
 }
@@ -19,7 +18,7 @@ interface RoomListResponse extends BasicResponse {
 /**
  * Request
  */
-interface RoomCreateRequest extends BasicRequest {
+interface RoomCreateRequest  {
   _id?: string;
   cinemaId: string;
   name: string;
@@ -31,11 +30,11 @@ interface RoomUpdateRequest extends RoomCreateRequest {
   id: string
 }
 
-interface RoomDeleteRequest extends BasicRequest {
+interface RoomDeleteRequest  {
   id: string
 }
 
-interface RoomFilterRequest extends BasicListRequest {
+interface RoomFilterRequest {
   name: string
 }
 

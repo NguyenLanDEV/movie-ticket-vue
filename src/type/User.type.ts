@@ -1,4 +1,3 @@
-import { BasicListRequest, BasicRequest, BasicResponse } from './Common.type'
 
 interface User {
     _id: string;
@@ -13,7 +12,7 @@ interface User {
 /**
  * Response
  */
-interface UserListResponse extends BasicResponse {
+interface UserListResponse  {
   items: User[]
   total_record: number
 }
@@ -21,7 +20,7 @@ interface UserListResponse extends BasicResponse {
 /**
  * Request
  */
-interface UserCreateRequest extends BasicRequest {
+interface UserCreateRequest  {
   _id?: string;
   name: string;
   email: string;
@@ -35,11 +34,11 @@ interface UserUpdateRequest extends UserCreateRequest {
   id: string
 }
 
-interface UserDeleteRequest extends BasicRequest {
+interface UserDeleteRequest  {
   id: string
 }
 
-interface UserFilterRequest extends BasicListRequest {
+interface UserFilterRequest  {
   name: string
 }
 

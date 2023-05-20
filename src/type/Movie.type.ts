@@ -1,9 +1,13 @@
 interface Movie {
-  id: number
+  _id?: string
   name: string
-  short_name: string
-  host_code: string
-  update_date: string
+  image: string
+  description: string
+  casts: string[]
+  director: string[]
+  producer: string[]
+  age: number
+  releaseTime: Date
 }
 
 /**

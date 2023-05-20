@@ -1,4 +1,3 @@
-import { BasicListRequest, BasicRequest, BasicResponse } from './Common.type'
 
 interface Cinema {
   _id: string;
@@ -14,7 +13,7 @@ interface Cinema {
 /**
  * Response
  */
-interface CinemaListResponse extends BasicResponse {
+interface CinemaListResponse  {
   items: Cinema[]
   total_record: number
 }
@@ -22,7 +21,7 @@ interface CinemaListResponse extends BasicResponse {
 /**
  * Request
  */
-interface CinemaCreateRequest extends BasicRequest {
+interface CinemaCreateRequest {
   _id?: string;
   name: string;
   email: string;
@@ -37,11 +36,11 @@ interface CinemaUpdateRequest extends CinemaCreateRequest {
   id: string
 }
 
-interface CinemaDeleteRequest extends BasicRequest {
+interface CinemaDeleteRequest {
   id: string
 }
 
-interface CinemaFilterRequest extends BasicListRequest {
+interface CinemaFilterRequest  {
   name: string
 }
 

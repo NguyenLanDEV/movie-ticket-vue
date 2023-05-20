@@ -9,19 +9,7 @@
         mode="horizontal"
         :style="{ lineHeight: '64px' }"
       >
-        <a-menu-item>
-          <a-select
-            v-model:value="value"
-            show-search
-            placeholder="Select a person"
-            style="width: 200px"
-            :options="options"
-            :filter-option="filterOption"
-            @focus="handleFocus"
-            @blur="handleBlur"
-            @change="handleChange"
-          ></a-select
-        ></a-menu-item>
+       
         <a-menu-item key="1">Movie</a-menu-item>
 
         <a-menu-item key="2">Seat</a-menu-item>

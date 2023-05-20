@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-button type="primary" @click="showModal">Add</a-button>
-    <a-modal v-model:visible="visible" title="Add" @ok="handleOk">
+    <a-modal v-model:visible="visible" title="Add" width="800px" @ok="handleOk">
       <template #footer>
         <a-button key="back" @click="handleCancel">Return</a-button>
         <a-button key="submit" type="primary" :loading="loading" @click="handleOk">Submit</a-button>
@@ -18,7 +18,7 @@ export default defineComponent({
   components: {
     MovieCreate
   },
-  setup() {
+  setup() { 
     const loading = ref<boolean>(false)
     const visible = ref<boolean>(false)
 

@@ -1,4 +1,3 @@
-import { BasicListRequest, BasicRequest, BasicResponse } from './Common.type'
 
 type TypeSeats = "standard" | "couple" | "bed" | "sweet_box"
 
@@ -14,7 +13,7 @@ interface Seat {
 /**
  * Response
  */
-interface SeatListResponse extends BasicResponse {
+interface SeatListResponse  {
   items: Seat[]
   total_record: number
 }
@@ -22,7 +21,7 @@ interface SeatListResponse extends BasicResponse {
 /**
  * Request
  */
-interface SeatCreateRequest extends BasicRequest {
+interface SeatCreateRequest  {
   _id?: string;
   roomId: string;
   type: TypeSeats;
@@ -35,11 +34,11 @@ interface SeatUpdateRequest extends SeatCreateRequest {
   id: string
 }
 
-interface SeatDeleteRequest extends BasicRequest {
+interface SeatDeleteRequest{
   id: string
 }
 
-interface SeatFilterRequest extends BasicListRequest {
+interface SeatFilterRequest  {
   name: string
 }
 
