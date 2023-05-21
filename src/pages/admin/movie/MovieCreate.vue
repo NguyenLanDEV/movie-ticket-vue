@@ -61,10 +61,7 @@
         </a-button>
       </a-upload>
       </a-form-item>
-     
   </a-form>
-  <a-button key="back" @click="handleCancel">Return</a-button>
-  <a-button  key="submit" type="primary" @click="submitForm">Submit</a-button>
 </template>
 <script lang="ts">
 import { message, type SelectProps, type UploadChangeParam } from 'ant-design-vue';
