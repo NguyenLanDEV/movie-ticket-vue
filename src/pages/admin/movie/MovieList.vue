@@ -49,7 +49,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import type { UnwrapRef } from 'vue'
-import MovieCreate from '../../pages/movie/MovieCreate.vue'
+import MovieCreate from './MovieCreate.vue'
 
 const columns = [
   {
