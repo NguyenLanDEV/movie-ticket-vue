@@ -1,43 +1,23 @@
 <template>
-  <div class="editable-add-btn" style="margin-bottom: 8px" v-show="showModal">
-    <a-button type="primary" @click="showModal">Add Movie</a-button>
-    <a-modal v-model:visible="visible" title="Add" width="800px" @ok="handleOk">
-      <MovieCreate></MovieCreate>
+  <div class="editable-add-btn" style="margin-bottom: 8px">
+    <a-button type="primary" @click="createDialog.visible = true">Add Movie</a-button>
+    <a-modal v-model:visible="createDialog.visible" :title="createDialog.title" width="800px">
+      <MovieCreate ref="formMovie" :rules="rules"></MovieCreate>
+
       <template #footer>
-        <a-button key="back" @click="handleCancel">Return</a-button>
-        <a-button key="submit" type="primary" :loading="loading" @click="handleOk">Submit</a-button>
+        <a-button key="back" @click="createDialog.visible = false">Return</a-button>
+        <a-button key="submit" type="primary" :loading="loading" @click.prevent="createMovieEvent">Submit</a-button>
       </template>
     </a-modal>
   </div>
+
   <a-table :columns="columns" :data-source="dataSource" bordered>
-    <template #bodyCell="{ column, text, record }">
-      <template v-if="['name', 'age', 'address'].includes(column.dataIndex)">
-        <div>
-          <a-input
-            v-if="editableData[record.key]"
-            v-model:value="editableData[record.key][column.dataIndex]"
-            style="margin: -5px 0"
-          />
-          <template v-else>
-            {{ text }}
-          </template>
-        </div>
-      </template>
-      <template v-else-if="column.dataIndex === 'operation'">
+    <template #bodyCell="{ column, record }">
+      <template v-if="column.dataIndex === 'operation'">
         <div class="editable-row-operations">
-          <span v-if="editableData[record.key]">
-            <a-typography-link @click="save(record.key)">Save</a-typography-link>
-            <a-popconfirm title="Sure to cancel?" @confirm="cancel(record.key)">
-              <a>Cancel</a>
-            </a-popconfirm>
-          </span>
-          <span v-else>
-            <a @click="edit(record.key)">Edit</a>
-            <a-popconfirm
-              v-if="dataSource.length"
-              title="Sure to delete?"
-              @confirm="onDelete(record.key)"
-            >
+          <span>
+            <a @click="edit(record._id)">Edit</a>
+            <a-popconfirm v-if="dataSource.length" title="Sure to delete?" @confirm="onDelete(record.key)">
               <a>Delete</a>
             </a-popconfirm>
           </span>
@@ -46,11 +26,17 @@
     </template>
   </a-table>
 </template>
-<script lang="ts">
-import { defineComponent, reactive, ref } from 'vue'
-import type { UnwrapRef } from 'vue'
-import MovieCreate from './MovieCreate.vue'
 
+<script lang="ts">
+import { defineComponent, onBeforeMount, reactive, ref, toRaw } from 'vue'
+import type { UnwrapRef } from 'vue'
+import { storeToRefs } from 'pinia'
+import MovieCreate from './MovieCreate.vue'
+import { useModalStore } from '@/stores/modal'
+import { createMovie, getMovieList } from '@/data/Movie.data'
+import type { MovieCreateRequest } from '@/type/Movie.type'
+import type { Rule } from 'ant-design-vue/es/form';
+import type { MovieCreateRef } from './MovieCreate.vue'
 const columns = [
   {
     title: 'name',
@@ -63,8 +49,8 @@ const columns = [
     width: '15%'
   },
   {
-    title: 'address',
-    dataIndex: 'address',
+    title: 'description',
+    dataIndex: 'description',
     width: '40%'
   },
   {
@@ -73,75 +59,140 @@ const columns = [
   }
 ]
 interface DataItem {
-  key: string
+  _id: string
   name: string
   age: number
-  address: string
+  image: string
+  description: string
+  releaseTime: Date
 }
-const data: DataItem[] = []
-for (let i = 0; i < 100; i++) {
-  data.push({
-    key: i.toString(),
-    name: `Edrward ${i}`,
-    age: 32,
-    address: `London Park no. ${i}`
-  })
-}
+
 export default defineComponent({
   components: {
     MovieCreate
   },
   setup() {
     const loading = ref<boolean>(false)
-    const visible = ref<boolean>(false)
-    const dataSource = ref(data)
+    const dataSource = ref()
     const editableData: UnwrapRef<Record<string, DataItem>> = reactive({})
+    const modalStore = useModalStore()
+    const { listModal } = storeToRefs(modalStore)
+    const { createModal } = modalStore
+    const createDialog = createModal("Add")
+    const formMovie = ref<MovieCreateRef>();
 
+    /* Validation
+    =================*/
+    let validateName = async (_rule: Rule, value: string) => {
+      if (value === '') {
+        return Promise.reject('Please input the *name again');
+      }else {
+        return Promise.resolve();
+      }
+    };
+    let validateDescription = async (_rule: Rule, value: string) => {
+      if (!value || value === '') {
+        return Promise.reject('Please input the *description again');
+      }else {
+        return Promise.resolve();
+      }
+    };
+    let validateAge = async (_rule: Rule, age: number) => {
+      if(age <6 || age >18) {
+        return Promise.reject("Please age between 6 and 18")
+      }else if (age % 1 > 0) {
+        return Promise.reject('Please enter a positive integer');
+      }else {
+        return Promise.resolve();
+      }
+    };
+    let validateReleaseTime = async (_rule: Rule, releaseTime: any) => {
+        let now = Date.now()
+        if(!releaseTime) { 
+          return Promise.reject('Please choose release time');
+        }
+        if(releaseTime < now){
+          return Promise.reject('Release time must large now');
+        }
+        return Promise.resolve();
+    };
+    const rules: Record<string, Rule[]> = {
+      name: [{ required: true, message:"requreid name", trigger: 'change' }],
+      description: [{required: true, validator: validateDescription, trigger: 'change' }],
+      age: [{ validator: validateAge, trigger: 'change' }],
+      releaseTime: [{ validator: validateReleaseTime, trigger: 'change' }],
+    };
+
+    /* Function
+    =================*/
     const edit = (key: string) => {
-      visible.value = true
-      // editableData[key] = cloneDeep(dataSource.value.filter((item) => key === item.key)[0])
+
     }
 
     const onDelete = (key: string) => {
-      dataSource.value = dataSource.value.filter((item) => item.key !== key)
+      // dataSource.value = dataSource.value.filter((item) => item.key !== key)
     }
-    
+
     const save = (key: string) => {
-      Object.assign(dataSource.value.filter((item) => key === item.key)[0], editableData[key])
+      // Object.assign(dataSource.value.filter((item) => key === item.key)[0], editableData[key])
       delete editableData[key]
     }
     const cancel = (key: string) => {
       delete editableData[key]
     }
     const showModal = () => {
-      visible.value = true
+      // visibleModal.value = true
     }
 
-    const handleOk = () => {
-      loading.value = true
-      setTimeout(() => {
+
+    const createMovieEvent = async () => {
+      if (!formMovie.value) 
+        return
+      try {
+        loading.value = true
+        const formData: MovieCreateRequest = toRaw<MovieCreateRequest>(formMovie.value.formState)
+        await formMovie.value.validateDialog()
+        const resonse = await createMovie(formData)
+        dataSource.value.push(formData)
+        createDialog.value.visible = false
+
+      } catch (error) {
+        console.log(error);
+      }finally {
         loading.value = false
-        visible.value = false
-      }, 2000)
+      }
+      
     }
 
     const handleCancel = () => {
-      visible.value = false
+      // visibleModal.value = false
     }
+
+    /* Life circle
+    =================*/
+    onBeforeMount(() => {
+      getMovieList().then(result => {
+        dataSource.value = result.metadata
+      })
+    })
+    
     return {
       dataSource,
       columns,
       editingKey: '',
       editableData,
       loading,
-      visible,
+      listModal,
+      createDialog,
+      formMovie,
+      rules,
       edit,
       save,
       cancel,
       onDelete,
       showModal,
-      handleOk,
-      handleCancel
+      createMovieEvent,
+      handleCancel,
     }
   }
 })

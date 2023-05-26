@@ -13,9 +13,10 @@ interface Movie {
 /**
  * Response
  */
-interface MovieListResponse {
-  items: Movie[]
-  total_record: number
+interface MovieListResponse{
+  metadata: Movie[]
+  message: number
+  status: number
 }
 
 /**

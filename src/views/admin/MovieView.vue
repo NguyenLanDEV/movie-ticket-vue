@@ -2,7 +2,7 @@
   <a-layout>
     <a-layout-header :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
       <div class="logo" />
-      <navbarComponent page="MoviePage"></navbarComponent>
+      <NavbarComponent page="MoviePage"></NavbarComponent>
     </a-layout-header>
 
     <a-layout-content :style="{ padding: '0 50px', marginTop: '64px' }">
@@ -21,18 +21,14 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import MovieList from '../../pages/admin/movie/MovieList.vue'
-import navbarComponent from '@/components/admin/navbarComponent.vue'
-import type { SelectProps } from 'ant-design-vue'
+import NavbarComponent from '@/components/admin/navbarComponent.vue'
 
 export default defineComponent({
   components: {
-    MovieList
+    MovieList,
+    NavbarComponent
   },
   setup() {
-    const options = ref<SelectProps['options']>([
-      { value: 'jack', label: 'Đà Nẵng' },
-      { value: 'lucy', label: 'Quảng Nam' }
-    ])
     const handleChange = (value: string) => {
       console.log(`selected ${value}`)
     }
@@ -51,7 +47,6 @@ export default defineComponent({
       handleBlur,
       handleFocus,
       handleChange,
-      options
     }
   }
 })
