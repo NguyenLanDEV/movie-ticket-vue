@@ -1,12 +1,14 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-
+import type { ModalType } from '@/type/Common.type'
 class Modal {
     public title: string
+    public type: ModalType
     public visible:boolean = false
 
-    constructor(title: string){
+    constructor(title: string, type: ModalType){
         this.title = title
+        this.type = type
     }
 
     public showModal (){
@@ -18,25 +20,12 @@ class Modal {
     }
 }
 export const useModalStore = defineStore('modal', () => {
-    const listModal = ref<Modal[]>([])
-    const createModal = (title: string) => {
+    const registerModal = (title: string, type: ModalType) => {
         if(!title) {
             throw new Error("Required title");
-            
         }
-        const modal = new Modal(title) 
-        listModal.value.push(modal)
+        const modal = new Modal(title, type) 
         return ref(modal)
     }
-
-    const getModal = (title: string) => {
-        const index = listModal.value.findIndex(modal => modal.title = title)
-        return listModal.value[index]
-    }
-    return { 
-                listModal,
-                createModal,
-                getModal,
-                
-            }
+    return { registerModal}
 })

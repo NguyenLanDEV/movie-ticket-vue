@@ -18,7 +18,7 @@ interface BasicResponse {
 interface BasicTableResponse extends BasicResponse {
   name: string
 }
-
+type ModalType= 'CREATE' | 'EDIT' | 'CUSTOM' 
 type Action = 'create' | 'update' | 'delete' | 'export' | 'history' | 'filter'
 
 interface ControlDialog {
@@ -40,6 +40,7 @@ export type {
   BasicResponse,
   BasicListRequest,
   Action,
+  ModalType,
   ControlDialog,
   BasicTableResponse,
   ApiResponse

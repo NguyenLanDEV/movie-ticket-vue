@@ -1,110 +1,96 @@
 <template>
-    <a-form :model="formState" :label-col="labelCol" :wrapper-col="wrapperCol">
-      <a-form-item label="Name movie">
-        <a-input v-model:value="formState.name" />
+  <a-form :model="formState"
+          :label-col="labelCol" 
+          :wrapper-col="wrapperCol"
+          :rules="rules">
+    <a-form-item label="Name movie" name="name" v-bind="validateInfos.name">
+      <a-input v-model:value="formState.name" />
+    </a-form-item>
+    <a-form-item label="Description" name="description" v-bind="validateInfos.description">
+      <a-input v-model:value="formState.description" />
+    </a-form-item>
+      <a-form-item label="Age：" name="age"  v-bind="validateInfos.age">
+        <a-input-number id="inputNumber" v-model:value="formState.age" :min="6" :max="18" /> 
       </a-form-item>
-      <a-form-item label="Description">
-        <a-input v-model:value="formState.description" />
+      <a-form-item label="Cast: ">
+        <a-select
+        v-model:value="formState.casts"
+        mode="tags"
+        style="width: 100%"
+        :token-separators="[',']"
+        placeholder="Select Cast"
+        :options="optionCast"
+        
+        ></a-select>
       </a-form-item>
-        <a-form-item label="Age：">
-          <a-input-number id="inputNumber" v-model:value="age" :min="1" :max="100" />
-        </a-form-item>
-        <a-form-item label="Cast: ">
-          <a-select
-          v-model:value="valueCasts"
-          mode="tags"
-          style="width: 100%"
+      <a-form-item label="Director: ">
+        <a-select
+        v-model:value="formState.directors"
+        mode="tags"
+        style="width: 100%"
+        :token-separators="[',']"
+        placeholder="Select Director"
+        :options="optionDirector"
+       
+        ></a-select>
+      </a-form-item>
+      <a-form-item label="Producer: ">
+        <a-select 
+          v-model:value="formState.producers" 
+          mode="tags" style="width: 100%" 
           :token-separators="[',']"
-          placeholder="Select Cast"
-          :options="optionCast"
-          @change="handleChangeCast"
-          ></a-select>
-        </a-form-item>
-        <a-form-item label="Director: ">
-          <a-select
-          v-model:value="valueDirectors"
-          mode="tags"
-          style="width: 100%"
-          :token-separators="[',']"
-          placeholder="Select Director"
-          :options="optionDirector"
-          @change="handleChangeDirector"
-          ></a-select>
-        </a-form-item>
-        <a-form-item label="Producer: ">
-          <a-select
-          v-model:value="valueProducers"
-          mode="tags"
-          style="width: 100%"
-          :token-separators="[',']"
-          placeholder="Select Producer"
-          :options="optionProducer"
-          @change="handleChangeProducer"
-          ></a-select>
-        </a-form-item>
-        <a-form-item label="Release Time: ">
-          <a-space direction="vertical" :size="12">
-            <a-range-picker v-model:value="releaseTime" />
-          </a-space>
-        </a-form-item>
-        <a-form-item label="Upload Image：">
-          <a-upload
-          v-model:file-list="fileList"
-          name="file"
-          action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          :headers="headers"
-          @change="handleChangeImage"
-        >
-          <a-button>
-            <upload-outlined></upload-outlined>
-            Click to Upload
-          </a-button>
-        </a-upload>
-        </a-form-item>
-     
-    </a-form>
-  </template>
+          placeholder="Select Producer" 
+          :options="optionProducer">
+        </a-select>
+      </a-form-item>
+      <a-form-item label="Release Time:" name="releaseTime" v-bind="validateInfos.releaseTime">
+        <a-space direction="vertical" :size="12">
+          <a-date-picker v-model:value="formState.releaseTime" />
+        </a-space>
+      </a-form-item>
+      <a-form-item label="Upload Image：">
+        <a-upload
+        name="file"
+        action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+        :headers="headers"
+        @change="handleChangeImage"
+      >
+        <a-button>
+          Click to Uploads
+        </a-button>
+      </a-upload>
+      </a-form-item>
+  </a-form>
+</template>
   <script lang="ts">
   import { message, type SelectProps, type UploadChangeParam } from 'ant-design-vue';
-  import { defineComponent, reactive, ref, toRaw, watch } from 'vue'
+  import { defineComponent, reactive, ref, inject } from 'vue'
+  import { getMetadata } from '@/data/metadata.data';
+  import { Form } from 'ant-design-vue';
+  import type { MovieCreateRequest } from '@/type/Movie.type';
   import type { Dayjs } from 'dayjs';
   type RangeValue = [Dayjs, Dayjs];
+  
+  const useForm = Form.useForm;
   export default defineComponent({
-    setup() {
+    props: ['rules'],
+    setup(props) {
       const formState = reactive({
         name: '',
+        age: 6,
+        image: "",
         description: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: '',
-        fileList: ''
+        casts: [],
+        directors: [],
+        producers: [],
+        releaseTime: null,
       })
       const releaseTime = ref<RangeValue>();
-      const age = ref<number>(18);
-      const fileList = ref([]);
-      const valueCasts = ref<string[]>([]);
-      const valueDirectors = ref<string[]>([]);
-      const valueProducers = ref<string[]>([]);
-      const optionCast = ref<SelectProps['options']>([
-        {
-          value: 'Thinh',
-          label: 'Thinh',
-        },
-      ]);
-      const optionDirector = ref<SelectProps['options']>([
-        {
-          value: 'Thinh',
-          label: 'Thinh',
-        },
-      ]);
-      const optionProducer = ref<SelectProps['options']>([
-        {
-          value: 'Thinh',
-          label: 'Thinh',
-        },
-      ]);
-  
+      const optionCast = ref<SelectProps['options']>([ ]);
+      const optionDirector = ref<SelectProps['options']>([]);
+      const optionProducer = ref<SelectProps['options']>([]);
+      const { validateInfos, validate} = useForm(formState, props.rules);
+
   
       const handleChangeImage = (info: UploadChangeParam) => {
         if (info.file.status !== 'uploading') {
@@ -116,47 +102,19 @@
           message.error(`${info.file.name} file upload failed.`);
         }
       };
-  
-      const onSubmit = () => {
-        console.log('submit!', toRaw(formState))
+
+      const validateDialog = async ()=> {
+        return validate()
       }
-  
-      const handleChangeCast = (value: []) => {
-        console.log(`selected ${value}`);
-      };
-  
-      const handleChangeDirector = (value: []) => {
-        console.log(`selected ${value}`);
-      };
-  
-      const handleChangeProducer = (value: []) => {
-        console.log(`selected ${value}`);
-      };
-  
-      watch(valueCasts, () => {
-        console.log('valueCasts', valueCasts.value);
-      });
-      watch(valueDirectors, () => {
-        console.log('valueDirectors', valueDirectors.value);
-      });
-      watch(valueProducers, () => {
-        console.log('valueProducers', valueProducers.value);
-      });
-      
+
       return {
         releaseTime,
-        valueCasts,
-        valueDirectors,
-        valueProducers,
         optionCast,
         optionDirector,
         optionProducer,
-        fileList,
-        age,
-        handleChangeCast,
         handleChangeImage,
-        handleChangeDirector,
-        handleChangeProducer,
+        validateDialog,
+        validateInfos,
         headers: {
           authorization: 'authorization-text',
         },
@@ -168,8 +126,7 @@
         wrapperCol: {
           span: 14
         },
-        formState,
-        onSubmit
+        formState
       }
     }
   })
