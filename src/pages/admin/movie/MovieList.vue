@@ -1,24 +1,19 @@
 <template>
   <div class="editable-add-btn" style="margin-bottom: 8px">
-    <a-button type="primary" @click="showModal('CREATE')">Add Movie</a-button>
-    <a-modal v-model:visible="dialog.visible" :title="dialog.title" width="800px" :key="dialog.type">
-      <template v-if="dialog.type = 'CREATE'"> 
+    <a-button type="primary" @click="dialog.showModal()">Add Movie</a-button>
+    <a-modal v-model:visible="dialog.visible" :title="dialog.title" width="800px">
         <MovieCreate ref="formMovie" :rules="rules"></MovieCreate>
-      </template>
-      <template v-else-if="dialog.type = 'EDIT'"> 
-        <MovieUpdate ref="formMovie" :rules="rules"></MovieUpdate>
-      </template>
-
       <template #footer>
-        <template v-if="dialog.type = 'CREATE'"> 
-          <a-button key="back" @click="dialog.visible = false">Return</a-button>
+          <a-button key="back" @click="dialog.closeModal()">Return</a-button>
           <a-button key="submit" type="primary" :loading="loading" @click.prevent="submitCreateEvent">Submit</a-button>
-        </template>
-        <template v-else-if="dialog.type = 'EDIT'"> 
-          <a-button key="back" @click="dialog.visible = false">Return</a-button>
+      </template>
+    </a-modal>
+
+    <a-modal v-model:visible="updateDialog.visible" :title="updateDialog.title" width="800px" :key="movieId">
+        <MovieUpdate ref="formUpdateMovie" :rules="rules" :movie-id="movieId"></MovieUpdate>
+      <template #footer>
+          <a-button key="back" @click="dialog.closeModal()">Return</a-button>
           <a-button key="submit" type="primary" :loading="loading" @click.prevent="submitUpdateEvent">Submit</a-button>
-        </template>
-      
       </template>
     </a-modal>
   </div>
@@ -40,16 +35,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount, reactive, ref, toRaw } from 'vue'
+import { defineComponent, onBeforeMount, reactive, ref, toRaw, provide, inject } from 'vue'
 import type { UnwrapRef } from 'vue'
 import MovieCreate from './MovieCreate.vue'
 import MovieUpdate from './MovieUpdate.vue'
 import { useModalStore } from '@/stores/modal'
 import { createMovie, getMovieList } from '@/data/Movie.data'
+import { getMetadata } from '@/data/metadata.data'
 import type { MovieCreateRequest } from '@/type/Movie.type'
 import type { Rule } from 'ant-design-vue/es/form';
 import type { MovieCreateRef } from './MovieCreate.vue'
-import type { ModalType } from '@/type/Common.type'
+import type { ErrorResponse } from '@/type/Common.type'
 
 const columns = [
   {
@@ -90,15 +86,14 @@ export default defineComponent({
     const dataSource = ref()
     const editableData: UnwrapRef<Record<string, DataItem>> = reactive({})
     const modalStore = useModalStore()
-    const dialog = modalStore.registerModal("Add", 'CREATE')
     const formMovie = ref<MovieCreateRef>();
-    const dialogInfor = {
-      title: {
-        EDIT: "Update movie",
-        CREATE: "Create movie",
-        CUSTOM: ""
-      }
-    }
+    const formUpdateMovie = ref<MovieCreateRef>();
+    const metadata = ref();
+
+    // register dialog
+    const dialog = modalStore.registerModal("Add", 'CREATE')
+    const updateDialog = modalStore.registerModal('Update movie', 'EDIT')
+    
     /* Validation
     =================*/
     let validateName = async (_rule: Rule, value: string) => {
@@ -143,8 +138,10 @@ export default defineComponent({
 
     /* Function
     =================*/
+    const movieId = ref();
     const edit = (id: string) => {
-      showModal('EDIT')
+      movieId.value = id
+      updateDialog.value.showModal()
     }
 
     const onDelete = (key: string) => {
@@ -158,26 +155,23 @@ export default defineComponent({
     const cancel = (key: string) => {
       delete editableData[key]
     }
-    const showModal = (type: ModalType) => {
-      dialog.value.title = dialogInfor.title[type]
-      dialog.value.type = type
-      dialog.value.visible = true
-    }
-
 
     const submitCreateEvent = async () => {
       if (!formMovie.value) 
         return
       try {
         loading.value = true
-        const formData: MovieCreateRequest = toRaw<MovieCreateRequest>(formMovie.value.formState)
+        const formData = toRaw<MovieCreateRequest>(formMovie.value.formState)
         await formMovie.value.validateDialog()
-        const resonse = await createMovie(formData)
-        dataSource.value.push(formData)
-        dialog.value.visible = false
+        const response = await createMovie(formData)
+        if(response.status == 201) {
+          dataSource.value.push(formData)
+          dialog.value.closeModal()
+        } 
 
-      } catch (error) {
-        console.log(error);
+      } catch (error: any) {
+        // console.log(error);
+        const apiError: ErrorResponse = {...error}
       }finally {
         loading.value = false
       }
@@ -204,6 +198,7 @@ export default defineComponent({
       // visibleModal.value = false
     }
 
+    provide('metadata', metadata)
     /* Life circle
     =================*/
     onBeforeMount(() => {
@@ -211,6 +206,13 @@ export default defineComponent({
         dataSource.value = result.metadata
       })
     })
+
+    onBeforeMount(()=> {
+      getMetadata().then(response => {
+        metadata.value = response
+      })
+
+    });
     
     return {
       dataSource,
@@ -220,12 +222,14 @@ export default defineComponent({
       loading,
       dialog,
       formMovie,
+      formUpdateMovie,
       rules,
+      movieId,
+      updateDialog,
       edit,
       save,
       cancel,
       onDelete,
-      showModal,
       submitCreateEvent,
       submitUpdateEvent,
       handleCancel,

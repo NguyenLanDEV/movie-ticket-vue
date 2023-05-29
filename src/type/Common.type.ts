@@ -29,11 +29,17 @@ interface ControlDialog {
 }
 
 interface ApiResponse<K> {
-  metadata:  K
+  metadata: K
   message: number
   status: number
 }
 
+type ErrorResponse = {
+  metadata: Object,
+  message: string,
+  status: number,
+  error: 'client-001' | 'backend-001' | 'validation-001' | 'auth-001'  | 'auth-002'  | 'auth-003' 
+}
 export type {
   PaginationParam,
   BasicRequest,
@@ -43,5 +49,6 @@ export type {
   ModalType,
   ControlDialog,
   BasicTableResponse,
-  ApiResponse
+  ApiResponse,
+  ErrorResponse
 }

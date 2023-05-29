@@ -66,10 +66,11 @@
 
 <script lang="ts">
 import { message, type SelectProps, type UploadChangeParam } from 'ant-design-vue';
-import { defineComponent, reactive, ref, toRaw, onBeforeMount } from 'vue'
-import type { MovieCreateRequest } from '@/type/Movie.type';
-import { getMetadata } from '@/data/metadata.data';
+import { defineComponent, reactive, ref, toRaw, onBeforeMount, inject } from 'vue'
 import { Form } from 'ant-design-vue';
+import type { MetadataResponse } from '@/type/Metadata.type';
+import type { MovieCreateRequest } from '@/type/Movie.type';
+import type {Ref} from "@vue/reactivity/dist/reactivity"
 
 export interface MovieCreateRef {
   formState: MovieCreateRequest
@@ -98,9 +99,19 @@ export default defineComponent({
     const optionDirector = ref<SelectProps['options']>([ ]);
     const optionProducer = ref<SelectProps['options']>([]);
     const { validateInfos, validate} = useForm(formState, props.rules);
-
+    const metadata = inject<Ref<MetadataResponse> >('metadata')?.value
     /* Function
     =================*/
+    optionProducer.value = metadata?.metadata.producers.map(item => { 
+      return {value: item.id, label: item.name }
+    })
+    optionCast.value = metadata?.metadata.casts.map(item => { 
+      return {value: item._id, label: item.name }
+    })
+    optionDirector.value = metadata?.metadata.directors.map(item => { 
+      return {value: item._id, label: item.name }
+    })
+
     const handleChangeImage = (info: UploadChangeParam) => {
       if (info.file.status !== 'uploading') {
         console.log(info.file, info.fileList);
@@ -135,17 +146,7 @@ export default defineComponent({
     /* Life circle Hook
     =================*/
     onBeforeMount(()=> {
-      getMetadata().then(response => {
-        optionProducer.value = response.metadata.producers.map(item => { 
-          return {value: item._id, label: item.name }
-        })
-        optionCast.value = response.metadata.casts.map(item => { 
-          return {value: item._id, label: item.name }
-        })
-        optionDirector.value = response.metadata.directors.map(item => { 
-          return {value: item._id, label: item.name }
-        })
-      })
+     
     });
     
     return {

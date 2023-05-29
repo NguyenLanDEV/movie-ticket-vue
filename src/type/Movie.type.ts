@@ -4,19 +4,10 @@ interface Movie {
   image: string
   description: string
   casts: string[]
-  director: string[]
-  producer: string[]
+  directors: string[]
+  producers: string[]
   age: number
-  releaseTime: Date
-}
-
-/**
- * Response
- */
-interface MovieListResponse{
-  metadata: Movie[]
-  message: number
-  status: number
+  releaseTime: Date | any
 }
 
 /**
@@ -28,8 +19,8 @@ interface MovieCreateRequest {
   image: string
   description: string
   casts: string[]
-  director: string[]
-  producer: string[]
+  directors: string[]
+  producers: string[]
   age: number
   releaseTime: Date
 }
