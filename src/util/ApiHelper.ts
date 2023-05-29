@@ -1,9 +1,9 @@
+import * as auth from "@/data/User.data"
 const API_URL = import.meta.env.VITE_API_URL
-
 class ApiHelper {
-  static async request<K>({endPoint= "/", method="GET", body= {}, headers= {}}): Promise<K> {
+  static async request<K>({endpoint= "/", method="GET", body= {}, headers= {}}): Promise<K> {
     try {
-      const url = `${API_URL}/${endPoint}`
+      const url = `${API_URL}/${endpoint}`
       const response = await fetch(url, {
         method: method,
         headers: {
@@ -16,19 +16,19 @@ class ApiHelper {
               .replace(/"\s+|\s+"/g, '"')
           : null : null
       })
-
       // Check has error
       const rs = await response.json()
+    
       if (rs?.error) {
         return Promise.reject({
-          msgId: rs?.error
+          ...rs
         })
       }
 
       return rs as K
     } catch (e) {
       return Promise.reject({
-        msgId: e
+        message: e
       })
     }
   }
@@ -36,27 +36,21 @@ class ApiHelper {
   /*Strategy pattern 
   ==================*/
   static async get<K>(endpoint: string): Promise<K>  {
-    return ApiHelper.request<K>({endPoint: endpoint});
+    return ApiHelper.request<K>({endpoint: endpoint});
   }
 
-  static async post<K>(endpoint: string,
-                        body: any,{
-                        headers={},
-                      }): Promise<K>  {
-    return ApiHelper.request<K>({method:'POST', endPoint: endpoint, body: body, headers: headers});
+  static async execute<K>({method= 'POST', endpoint= "/", body= {}, hasUser= true  }): Promise<K> {
+    const userStore = auth.getUser();
+    let headers = {};
+    if(hasUser) {
+      headers = {
+        authorization: userStore.authorization
+      };
+    }
+    return ApiHelper.request<K>({method: method, endpoint: endpoint, body: body, headers: headers});
   }
+  
 
-  static async put<K>(endpoint: string, body: any): Promise<K>  {
-    return ApiHelper.request<K>({method:'PUT',endPoint: endpoint,body: body});
-  }
-
-  static async patch<K>(endpoint: string, body: any): Promise<K>  {
-    return ApiHelper.request<K>({method:'PATCH',endPoint: endpoint,body: body});
-  }
-
-  static async delete<K>(endpoint: any): Promise<K>  {
-    return ApiHelper.request<K>({method: 'DELETE',endPoint: endpoint});
-  }
 
   /*end new function
   ==================*/

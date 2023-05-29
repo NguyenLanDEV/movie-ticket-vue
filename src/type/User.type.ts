@@ -42,6 +42,10 @@ interface UserFilterRequest  {
   name: string
 }
 
+interface UserLocalStore {
+  authorization: String,
+}
+
 export type {
   User,
   UserListResponse,
@@ -49,4 +53,5 @@ export type {
   UserUpdateRequest,
   UserDeleteRequest,
   UserFilterRequest,
+  UserLocalStore
 }

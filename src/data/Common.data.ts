@@ -28,6 +28,12 @@ interface ControlDialog {
   back?: string
 }
 
+interface ApiResponse<K> {
+  metadata: K
+  message: string
+  status: number | string
+}
+
 export type {
   PaginationParam,
   BasicRequest,
@@ -36,4 +42,5 @@ export type {
   Action,
   ControlDialog,
   BasicTableResponse,
+  ApiResponse
 }

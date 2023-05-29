@@ -62,20 +62,22 @@
       </a-form-item>
   </a-form>
 </template>
-  <script lang="ts">
+<script lang="ts">
   import { message, type SelectProps, type UploadChangeParam } from 'ant-design-vue';
-  import { defineComponent, reactive, ref, inject } from 'vue'
-  import { getMetadata } from '@/data/metadata.data';
+  import { defineComponent, ref, inject, onBeforeMount } from 'vue'
   import { Form } from 'ant-design-vue';
-  import type { MovieCreateRequest } from '@/type/Movie.type';
-  import type { Dayjs } from 'dayjs';
-  type RangeValue = [Dayjs, Dayjs];
-  
+  import {type Movie} from '@/type/Movie.type';
+  import dayjs from "dayjs"
+  import {type Ref} from "@vue/reactivity/dist/reactivity"
+  import type { MetadataResponse } from '@/type/Metadata.type'
+  import { getMovie } from '@/data/Movie.data';
+
   const useForm = Form.useForm;
+
   export default defineComponent({
-    props: ['rules'],
+    props: ['rules', 'movieId'],
     setup(props) {
-      const formState = reactive({
+      const formState = ref<Movie>({
         name: '',
         age: 6,
         image: "",
@@ -85,13 +87,12 @@
         producers: [],
         releaseTime: null,
       })
-      const releaseTime = ref<RangeValue>();
       const optionCast = ref<SelectProps['options']>([ ]);
       const optionDirector = ref<SelectProps['options']>([]);
       const optionProducer = ref<SelectProps['options']>([]);
       const { validateInfos, validate} = useForm(formState, props.rules);
-
-  
+      const metadata = inject<Ref<MetadataResponse> >('metadata')?.value
+      
       const handleChangeImage = (info: UploadChangeParam) => {
         if (info.file.status !== 'uploading') {
           console.log(info.file, info.fileList);
@@ -106,9 +107,26 @@
       const validateDialog = async ()=> {
         return validate()
       }
+      
+      optionProducer.value = metadata?.metadata.producers.map(item => { 
+        return {value: item._id, label: item.name }
+      })
+      optionCast.value = metadata?.metadata.casts.map(item => { 
+        return {value: item._id, label: item.name }
+      })
+      optionDirector.value = metadata?.metadata.directors.map(item => { 
+        return {value: item._id, label: item.name }
+      })
 
+      /*Life circle
+      ====================*/
+      onBeforeMount(()=> {
+        getMovie(props.movieId).then(response => {
+          formState.value = response.metadata
+          formState.value.releaseTime = dayjs(response.metadata.releaseTime)
+        })
+      })
       return {
-        releaseTime,
         optionCast,
         optionDirector,
         optionProducer,
