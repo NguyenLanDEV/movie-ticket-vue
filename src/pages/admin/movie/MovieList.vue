@@ -2,7 +2,7 @@
   <div class="editable-add-btn" style="margin-bottom: 8px">
     <a-button type="primary" @click="dialog.showModal()">Add Movie</a-button>
     <a-modal v-model:visible="dialog.visible" :title="dialog.title" width="800px">
-        <MovieCreate ref="formMovie" :rules="rules"></MovieCreate>
+        <MovieCreate ref="createComponent" :rules="rules"></MovieCreate>
       <template #footer>
           <a-button key="back" @click="dialog.closeModal()">Return</a-button>
           <a-button key="submit" type="primary" :loading="loading" @click.prevent="submitCreateEvent">Submit</a-button>
@@ -10,7 +10,7 @@
     </a-modal>
 
     <a-modal v-model:visible="updateDialog.visible" :title="updateDialog.title" width="800px" :key="movieId">
-        <MovieUpdate ref="formUpdateMovie" :rules="rules" :movie-id="movieId"></MovieUpdate>
+        <MovieUpdate ref="updateComponent"  :movie-id="movieId"></MovieUpdate>
       <template #footer>
           <a-button key="back" @click="dialog.closeModal()">Return</a-button>
           <a-button key="submit" type="primary" :loading="loading" @click.prevent="submitUpdateEvent">Submit</a-button>
@@ -35,16 +35,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount, reactive, ref, toRaw, provide, inject } from 'vue'
+import { defineComponent, onBeforeMount, reactive, ref, toRaw, provide } from 'vue'
 import type { UnwrapRef } from 'vue'
 import MovieCreate from './MovieCreate.vue'
 import MovieUpdate from './MovieUpdate.vue'
 import { useModalStore } from '@/stores/modal'
-import { createMovie, getMovieList } from '@/data/Movie.data'
+import { createMovie, getMovieList, updateMovie } from '@/data/Movie.data'
 import { getMetadata } from '@/data/metadata.data'
-import type { MovieCreateRequest } from '@/type/Movie.type'
+import type { MovieComponentRef, MovieCreateRequest, MovieUpdateRequest } from '@/type/Movie.type'
 import type { Rule } from 'ant-design-vue/es/form';
-import type { MovieCreateRef } from './MovieCreate.vue'
 import type { ErrorResponse } from '@/type/Common.type'
 
 const columns = [
@@ -86,8 +85,8 @@ export default defineComponent({
     const dataSource = ref()
     const editableData: UnwrapRef<Record<string, DataItem>> = reactive({})
     const modalStore = useModalStore()
-    const formMovie = ref<MovieCreateRef>();
-    const formUpdateMovie = ref<MovieCreateRef>();
+    const createComponent = ref<MovieComponentRef<any>>();
+    const updateComponent = ref<MovieComponentRef<any>>();
     const metadata = ref();
 
     // register dialog
@@ -129,6 +128,7 @@ export default defineComponent({
         }
         return Promise.resolve();
     };
+
     const rules: Record<string, Rule[]> = {
       name: [{ required: true, validator: validateName, trigger: 'change' }],
       description: [{required: true, validator: validateDescription, trigger: 'change' }],
@@ -136,6 +136,11 @@ export default defineComponent({
       releaseTime: [{ validator: validateReleaseTime, trigger: 'change' }],
     };
 
+    const rulesUpdate: Record<string, Rule[]> = {
+      name: [{ required: true, validator: validateName, trigger: 'change' }],
+      description: [{required: true, validator: validateDescription, trigger: 'change' }],
+      age: [{ validator: validateAge, trigger: 'change' }],
+    };
     /* Function
     =================*/
     const movieId = ref();
@@ -157,15 +162,17 @@ export default defineComponent({
     }
 
     const submitCreateEvent = async () => {
-      if (!formMovie.value) 
+      if (!createComponent.value) 
         return
       try {
         loading.value = true
-        const formData = toRaw<MovieCreateRequest>(formMovie.value.formState)
-        await formMovie.value.validateDialog()
+        const formData = toRaw<MovieCreateRequest>(createComponent.value.formState)
+        await createComponent.value.validateDialog()
         const response = await createMovie(formData)
         if(response.status == 201) {
-          dataSource.value.push(formData)
+          getMovieList().then(result => {
+            dataSource.value = result.metadata
+          })
           dialog.value.closeModal()
         } 
 
@@ -178,15 +185,19 @@ export default defineComponent({
     }
 
     const submitUpdateEvent = async () => {
-      if (!formMovie.value) 
+      if (!updateComponent.value) 
         return
       try {
         loading.value = true
-        const formData: MovieCreateRequest = toRaw<MovieCreateRequest>(formMovie.value.formState)
-        await formMovie.value.validateDialog()
-        const resonse = await createMovie(formData)
-        dataSource.value.push(formData)
-        dialog.value.visible = false
+        const formData = toRaw<MovieUpdateRequest>(updateComponent.value.formState)
+        await updateComponent.value.validateDialog()
+        const response = await updateMovie(formData)
+        if(response.status == 201) {
+          getMovieList().then(result => {
+            dataSource.value = result.metadata
+          })
+          updateDialog.value.closeModal()
+        } 
       } catch (error) {
         console.log(error);
       }finally {
@@ -221,9 +232,10 @@ export default defineComponent({
       editableData,
       loading,
       dialog,
-      formMovie,
-      formUpdateMovie,
+      createComponent,
+      updateComponent,
       rules,
+      rulesUpdate,
       movieId,
       updateDialog,
       edit,

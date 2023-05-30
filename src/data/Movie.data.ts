@@ -1,8 +1,6 @@
 import {
   type MovieCreateRequest,
   type MovieDeleteRequest,
-  type MovieFilterRequest,
-  type MovieListResponse,
   type MovieUpdateRequest,
   type Movie,
 } from '../type/Movie.type'
@@ -14,7 +12,7 @@ import {
 import { ApiHelper } from '../util/ApiHelper'
 const endPoint = "movie"
 
-const getMovieList = async (params?: any): Promise<MovieListResponse> => {
+const getMovieList = async (params?: any): Promise<ApiResponse<Movie[]>> => {
   const url = endPoint+"?"+ new URLSearchParams(params).toString()
   return await ApiHelper.get<ApiResponse<Movie[]>>(url)
 }
@@ -28,9 +26,9 @@ const createMovie = async (params: MovieCreateRequest): Promise<ApiResponse<any>
   return await ApiHelper.execute({body: params, endpoint: endPoint})
 }
 
-const updateMovie = async (params: MovieUpdateRequest) => {
-  const url = endPoint+"/"+ params.id
-  // return await ApiHelper.execute(url, params)
+const updateMovie = async (params: MovieUpdateRequest): Promise<ApiResponse<Movie>> => {
+  const url = endPoint+"/"+ params._id
+  return await ApiHelper.execute({body: params, endpoint: url, method: "PUT"})
 }
 
 const deleteMovie = async (params: MovieDeleteRequest) => {

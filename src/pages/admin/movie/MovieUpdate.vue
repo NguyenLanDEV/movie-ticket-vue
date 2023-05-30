@@ -43,7 +43,7 @@
           :options="optionProducer">
         </a-select>
       </a-form-item>
-      <a-form-item label="Release Time:" name="releaseTime" v-bind="validateInfos.releaseTime">
+      <a-form-item label="Release Time:" name="releaseTime" >
         <a-space direction="vertical" :size="12">
           <a-date-picker v-model:value="formState.releaseTime" />
         </a-space>
@@ -63,21 +63,22 @@
   </a-form>
 </template>
 <script lang="ts">
-  import { message, type SelectProps, type UploadChangeParam } from 'ant-design-vue';
   import { defineComponent, ref, inject, onBeforeMount } from 'vue'
   import { Form } from 'ant-design-vue';
-  import {type Movie} from '@/type/Movie.type';
   import dayjs from "dayjs"
+  import { getMovie } from '@/data/Movie.data';
+  import { message, type SelectProps, type UploadChangeParam } from 'ant-design-vue';
   import {type Ref} from "@vue/reactivity/dist/reactivity"
   import type { MetadataResponse } from '@/type/Metadata.type'
-  import { getMovie } from '@/data/Movie.data';
+import type { Movie, MovieUpdateRequest } from '@/type/Movie.type';
 
   const useForm = Form.useForm;
 
   export default defineComponent({
     props: ['rules', 'movieId'],
     setup(props) {
-      const formState = ref<Movie>({
+      const currentTime = dayjs()
+      const formState = ref<MovieUpdateRequest>({
         name: '',
         age: 6,
         image: "",
@@ -90,9 +91,9 @@
       const optionCast = ref<SelectProps['options']>([ ]);
       const optionDirector = ref<SelectProps['options']>([]);
       const optionProducer = ref<SelectProps['options']>([]);
-      const { validateInfos, validate} = useForm(formState, props.rules);
+      const { validateInfos, validate, rulesRef} = useForm(formState, props.rules, {immediate: false});
       const metadata = inject<Ref<MetadataResponse> >('metadata')?.value
-      
+
       const handleChangeImage = (info: UploadChangeParam) => {
         if (info.file.status !== 'uploading') {
           console.log(info.file, info.fileList);
@@ -104,7 +105,7 @@
         }
       };
 
-      const validateDialog = async ()=> {
+      const validateDialog =  ()=> {
         return validate()
       }
       
@@ -127,11 +128,13 @@
         })
       })
       return {
+        currentTime,
         optionCast,
         optionDirector,
         optionProducer,
         handleChangeImage,
         validateDialog,
+        rulesRef,
         validateInfos,
         headers: {
           authorization: 'authorization-text',

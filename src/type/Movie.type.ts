@@ -1,5 +1,5 @@
 interface Movie {
-  _id?: string
+  _id: string
   name: string
   image: string
   description: string
@@ -10,11 +10,16 @@ interface Movie {
   releaseTime: Date | any
 }
 
+interface MovieComponentRef<L> {
+  formState: L
+  validateDialog: ()=> any
+  rulesRef: any
+}
+
 /**
  * Request
  */
 interface MovieCreateRequest {
-  _id?: string
   name: string
   image: string
   description: string
@@ -22,11 +27,11 @@ interface MovieCreateRequest {
   directors: string[]
   producers: string[]
   age: number
-  releaseTime: Date
+  releaseTime: any
 }
 
 interface MovieUpdateRequest extends MovieCreateRequest {
-  id: string
+  _id?: string
 }
 
 interface MovieDeleteRequest {
@@ -39,9 +44,9 @@ interface MovieFilterRequest {
 
 export type {
   Movie,
-  MovieListResponse,
   MovieCreateRequest,
   MovieUpdateRequest,
   MovieDeleteRequest,
-  MovieFilterRequest
+  MovieFilterRequest,
+  MovieComponentRef
 }

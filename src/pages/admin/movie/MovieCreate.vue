@@ -72,11 +72,6 @@ import type { MetadataResponse } from '@/type/Metadata.type';
 import type { MovieCreateRequest } from '@/type/Movie.type';
 import type {Ref} from "@vue/reactivity/dist/reactivity"
 
-export interface MovieCreateRef {
-  formState: MovieCreateRequest
-  validateDialog: ()=> Promise<any>
-}
-
 const useForm = Form.useForm;
 
 export default defineComponent({
@@ -111,7 +106,6 @@ export default defineComponent({
     optionDirector.value = metadata?.metadata.directors.map(item => { 
       return {value: item._id, label: item.name }
     })
-    console.log(optionProducer.value);
     
     const handleChangeImage = (info: UploadChangeParam) => {
       if (info.file.status !== 'uploading') {
