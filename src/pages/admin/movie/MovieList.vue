@@ -2,7 +2,7 @@
   <div class="editable-add-btn" style="margin-bottom: 8px">
     <a-button type="primary" @click="dialog.showModal()">Add Movie</a-button>
     <a-modal v-model:visible="dialog.visible" :title="dialog.title" width="800px">
-        <MovieCreate ref="createComponent" :rules="rules"></MovieCreate>
+        <MovieCreate ref="createComponent" :rules="rules" :formErrors="formErrors"></MovieCreate>
       <template #footer>
           <a-button key="back" @click="dialog.closeModal()">Return</a-button>
           <a-button key="submit" type="primary" :loading="loading" @click.prevent="submitCreateEvent">Submit</a-button>
@@ -10,9 +10,9 @@
     </a-modal>
 
     <a-modal v-model:visible="updateDialog.visible" :title="updateDialog.title" width="800px" :key="movieId">
-        <MovieUpdate ref="updateComponent"  :movie-id="movieId"></MovieUpdate>
+        <MovieUpdate ref="updateComponent" :rules="rulesUpdate" :movie-id="movieId" :formErrors="formErrors"></MovieUpdate>
       <template #footer>
-          <a-button key="back" @click="dialog.closeModal()">Return</a-button>
+          <a-button key="back" @click="updateDialog.closeModal()">Return</a-button>
           <a-button key="submit" type="primary" :loading="loading" @click.prevent="submitUpdateEvent">Submit</a-button>
       </template>
     </a-modal>
@@ -95,6 +95,7 @@ export default defineComponent({
     
     /* Validation
     =================*/
+    const formErrors = ref({})
     let validateName = async (_rule: Rule, value: string) => {
       if (value === '') {
         return Promise.reject('Please input the *name again');
@@ -146,6 +147,7 @@ export default defineComponent({
     const movieId = ref();
     const edit = (id: string) => {
       movieId.value = id
+      formErrors.value = {}
       updateDialog.value.showModal()
     }
 
@@ -166,6 +168,7 @@ export default defineComponent({
         return
       try {
         loading.value = true
+        formErrors.value = {}
         const formData = toRaw<MovieCreateRequest>(createComponent.value.formState)
         await createComponent.value.validateDialog()
         const response = await createMovie(formData)
@@ -178,9 +181,17 @@ export default defineComponent({
 
       } catch (error: any) {
         // console.log(error);
+        if(error?.error == 'validation-001'){
+          let temp: any = {}
+          error.metadata.forEach((error: any) => {
+            temp[error.context.key] =  error.message
+          })
+          formErrors.value = temp
+        }
         const apiError: ErrorResponse = {...error}
       }finally {
         loading.value = false
+        
       }
     }
 
@@ -189,17 +200,27 @@ export default defineComponent({
         return
       try {
         loading.value = true
+        formErrors.value = {}
         const formData = toRaw<MovieUpdateRequest>(updateComponent.value.formState)
         await updateComponent.value.validateDialog()
         const response = await updateMovie(formData)
+        
         if(response.status == 201) {
           getMovieList().then(result => {
             dataSource.value = result.metadata
           })
           updateDialog.value.closeModal()
         } 
-      } catch (error) {
-        console.log(error);
+      } catch (error: any) {
+        // console.log(error);
+        if(error?.error == 'validation-001'){
+          let temp: any = {}
+          error.metadata.forEach((error: any) => {
+            temp[error.context.key] =  error.message
+          })
+          formErrors.value = temp
+        }
+        
       }finally {
         loading.value = false
       }
@@ -238,6 +259,7 @@ export default defineComponent({
       rulesUpdate,
       movieId,
       updateDialog,
+      formErrors,
       edit,
       save,
       cancel,

@@ -3,16 +3,16 @@
           :label-col="labelCol" 
           :wrapper-col="wrapperCol"
           :rules="rules">
-    <a-form-item label="Name movie" name="name" v-bind="validateInfos.name">
+    <a-form-item label="Name movie" name="name" v-bind="validateInfos.name" :validateStatus="formErrors.name ? 'error' : '' " :help="formErrors.name">
       <a-input v-model:value="formState.name" />
     </a-form-item>
-    <a-form-item label="Description" name="description" v-bind="validateInfos.description">
+    <a-form-item label="Description" name="description" v-bind="validateInfos.description" :validateStatus="formErrors.description ? 'error' : '' " :help="formErrors.description">
       <a-input v-model:value="formState.description" />
     </a-form-item>
-      <a-form-item label="Age：" name="age"  v-bind="validateInfos.age">
+      <a-form-item label="Age：" name="age"  v-bind="validateInfos.age" :validateStatus="formErrors.age ? 'error' : '' " :help="formErrors.age" >
         <a-input-number id="inputNumber" v-model:value="formState.age" :min="6" :max="18" /> 
       </a-form-item>
-      <a-form-item label="Cast: ">
+      <a-form-item label="Cast: " :validateStatus="formErrors.casts ? 'error' : '' " :help="formErrors.casts">
         <a-select
         v-model:value="formState.casts"
         mode="tags"
@@ -23,7 +23,7 @@
         
         ></a-select>
       </a-form-item>
-      <a-form-item label="Director: ">
+      <a-form-item label="Director: " :validateStatus="formErrors.directors ? 'error' : '' " :help="formErrors.directors">
         <a-select
         v-model:value="formState.directors"
         mode="tags"
@@ -34,7 +34,7 @@
        
         ></a-select>
       </a-form-item>
-      <a-form-item label="Producer: ">
+      <a-form-item label="Producer: " :validateStatus="formErrors.producers ? 'error' : '' " :help="formErrors.producers">
         <a-select 
           v-model:value="formState.producers" 
           mode="tags" style="width: 100%" 
@@ -43,7 +43,7 @@
           :options="optionProducer">
         </a-select>
       </a-form-item>
-      <a-form-item label="Release Time:" name="releaseTime" >
+      <a-form-item label="Release Time:" name="releaseTime" :validateStatus="formErrors.releaseTime ? 'error' : '' " :help="formErrors.releaseTime">
         <a-space direction="vertical" :size="12">
           <a-date-picker v-model:value="formState.releaseTime" />
         </a-space>
@@ -75,7 +75,7 @@ import type { Movie, MovieUpdateRequest } from '@/type/Movie.type';
   const useForm = Form.useForm;
 
   export default defineComponent({
-    props: ['rules', 'movieId'],
+    props: ['rules', 'movieId', 'formErrors'],
     setup(props) {
       const currentTime = dayjs()
       const formState = ref<MovieUpdateRequest>({
@@ -91,7 +91,7 @@ import type { Movie, MovieUpdateRequest } from '@/type/Movie.type';
       const optionCast = ref<SelectProps['options']>([ ]);
       const optionDirector = ref<SelectProps['options']>([]);
       const optionProducer = ref<SelectProps['options']>([]);
-      const { validateInfos, validate, rulesRef} = useForm(formState, props.rules, {immediate: false});
+      const { validateInfos, validate} = useForm(formState, props.rules, {immediate: false});
       const metadata = inject<Ref<MetadataResponse> >('metadata')?.value
 
       const handleChangeImage = (info: UploadChangeParam) => {
@@ -127,6 +127,7 @@ import type { Movie, MovieUpdateRequest } from '@/type/Movie.type';
           formState.value.releaseTime = dayjs(response.metadata.releaseTime)
         })
       })
+      
       return {
         currentTime,
         optionCast,
@@ -134,7 +135,6 @@ import type { Movie, MovieUpdateRequest } from '@/type/Movie.type';
         optionProducer,
         handleChangeImage,
         validateDialog,
-        rulesRef,
         validateInfos,
         headers: {
           authorization: 'authorization-text',

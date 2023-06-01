@@ -14,3 +14,12 @@ import * as _ from "lodash"
      
      return filter
 }
+
+export function emitKeys<T>(subject: object, keys: Array<string>): T{
+     if(typeof subject != 'object' ) {
+          return {} as T
+     }
+     else {
+          return _.omit(subject, keys) as T
+     }
+}

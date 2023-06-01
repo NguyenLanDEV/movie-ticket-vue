@@ -10,6 +10,7 @@ import {
 } from "@/type/Common.type"
 
 import { ApiHelper } from '../util/ApiHelper'
+import {emitKeys} from "../util/common"
 const endPoint = "movie"
 
 const getMovieList = async (params?: any): Promise<ApiResponse<Movie[]>> => {
@@ -28,6 +29,7 @@ const createMovie = async (params: MovieCreateRequest): Promise<ApiResponse<any>
 
 const updateMovie = async (params: MovieUpdateRequest): Promise<ApiResponse<Movie>> => {
   const url = endPoint+"/"+ params._id
+  params = emitKeys<MovieUpdateRequest>(params,['_id'])
   return await ApiHelper.execute({body: params, endpoint: url, method: "PUT"})
 }
 
