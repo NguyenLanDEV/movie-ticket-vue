@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MovieView from '../views/admin/MovieView.vue'
-
+import MovieList from "../pages/admin/movie/MovieList.vue"
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -9,7 +9,11 @@ const router = createRouter({
       name: 'home',
       component: MovieView,
       children: [
-        
+        {
+          path: '/admin',
+          name: 'movie',
+          component: MovieList,
+        }
       ]
     },
     {

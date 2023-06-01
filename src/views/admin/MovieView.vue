@@ -11,7 +11,7 @@
         <a-breadcrumb-item>List</a-breadcrumb-item>
       </a-breadcrumb>
       <div :style="{ background: '#fff', padding: '24px', minHeight: '750px' }">
-        <MovieList></MovieList>
+        <RouterView />
       </div>
     </a-layout-content>
     
@@ -20,12 +20,11 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import MovieList from '../../pages/admin/movie/MovieList.vue'
 import NavbarComponent from '@/components/admin/navbarComponent.vue'
+import 'ant-design-vue/dist/antd.css';
 
 export default defineComponent({
   components: {
-    MovieList,
     NavbarComponent
   },
   setup() {
@@ -65,5 +64,18 @@ export default defineComponent({
 
 [data-theme='dark'] .site-layout .site-layout-background {
   background: #141414;
+}
+.form_errors {
+  color: black;
+  border: solid 1px red;
+  background-color: #ffebe8;
+
+}
+.form_errors ul {
+  padding: 10px 10px;
+}
+.form_errors ul li{
+  text-decoration: none;
+  list-style: none;
 }
 </style>

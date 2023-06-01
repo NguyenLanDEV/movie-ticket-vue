@@ -35,16 +35,18 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount, reactive, ref, toRaw, provide } from 'vue'
+import { defineComponent, onBeforeMount, reactive, ref, toRaw, provide,  } from 'vue'
 import type { UnwrapRef } from 'vue'
 import MovieCreate from './MovieCreate.vue'
 import MovieUpdate from './MovieUpdate.vue'
 import { useModalStore } from '@/stores/modal'
-import { createMovie, getMovieList, updateMovie } from '@/data/Movie.data'
+import { createMovie, getMovieList, updateMovie, deleteMovie } from '@/data/Movie.data'
 import { getMetadata } from '@/data/metadata.data'
-import type { MovieComponentRef, MovieCreateRequest, MovieUpdateRequest } from '@/type/Movie.type'
+import { notification } from 'ant-design-vue';
+import type { Movie, MovieComponentRef, MovieCreateRequest, MovieUpdateRequest } from '@/type/Movie.type'
 import type { Rule } from 'ant-design-vue/es/form';
 import type { ErrorResponse } from '@/type/Common.type'
+import type{ IconType } from 'ant-design-vue/lib/notification/index'
 
 const columns = [
   {
@@ -88,14 +90,13 @@ export default defineComponent({
     const createComponent = ref<MovieComponentRef<any>>();
     const updateComponent = ref<MovieComponentRef<any>>();
     const metadata = ref();
-
     // register dialog
     const dialog = modalStore.registerModal("Add", 'CREATE')
     const updateDialog = modalStore.registerModal('Update movie', 'EDIT')
     
     /* Validation
     =================*/
-    const formErrors = ref({})
+    const formErrors = ref<any>([])
     let validateName = async (_rule: Rule, value: string) => {
       if (value === '') {
         return Promise.reject('Please input the *name again');
@@ -144,15 +145,30 @@ export default defineComponent({
     };
     /* Function
     =================*/
+    const openNotificationWithIcon = (type: IconType, title: string, description: string) => {
+      notification.open({
+        message: title,
+        description: description,
+        type: type,
+        duration: null
+      })
+    };
+
     const movieId = ref();
     const edit = (id: string) => {
       movieId.value = id
-      formErrors.value = {}
+      formErrors.value = []
       updateDialog.value.showModal()
     }
 
-    const onDelete = (key: string) => {
+    const onDelete = async (key: string) => {
       // dataSource.value = dataSource.value.filter((item) => item.key !== key)
+      try {
+        // const response = await deleteMovie(key)
+        openNotificationWithIcon('success', 'delete success','')
+      } catch (error) {
+        console.log("delete::" + error);
+      }
     }
 
     const save = (key: string) => {
@@ -168,7 +184,7 @@ export default defineComponent({
         return
       try {
         loading.value = true
-        formErrors.value = {}
+        formErrors.value = []
         const formData = toRaw<MovieCreateRequest>(createComponent.value.formState)
         await createComponent.value.validateDialog()
         const response = await createMovie(formData)
@@ -180,15 +196,11 @@ export default defineComponent({
         } 
 
       } catch (error: any) {
-        // console.log(error);
         if(error?.error == 'validation-001'){
-          let temp: any = {}
           error.metadata.forEach((error: any) => {
-            temp[error.context.key] =  error.message
+            formErrors.value.push({key: error.context.key, message: error.message})  
           })
-          formErrors.value = temp
         }
-        const apiError: ErrorResponse = {...error}
       }finally {
         loading.value = false
         
@@ -200,7 +212,7 @@ export default defineComponent({
         return
       try {
         loading.value = true
-        formErrors.value = {}
+        formErrors.value = []
         const formData = toRaw<MovieUpdateRequest>(updateComponent.value.formState)
         await updateComponent.value.validateDialog()
         const response = await updateMovie(formData)
@@ -212,13 +224,10 @@ export default defineComponent({
           updateDialog.value.closeModal()
         } 
       } catch (error: any) {
-        // console.log(error);
         if(error?.error == 'validation-001'){
-          let temp: any = {}
           error.metadata.forEach((error: any) => {
-            temp[error.context.key] =  error.message
+            formErrors.value.push(error.message)  
           })
-          formErrors.value = temp
         }
         
       }finally {
@@ -260,6 +269,7 @@ export default defineComponent({
       movieId,
       updateDialog,
       formErrors,
+      openNotificationWithIcon,
       edit,
       save,
       cancel,

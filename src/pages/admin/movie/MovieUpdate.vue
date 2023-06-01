@@ -3,16 +3,16 @@
           :label-col="labelCol" 
           :wrapper-col="wrapperCol"
           :rules="rules">
-    <a-form-item label="Name movie" name="name" v-bind="validateInfos.name" :validateStatus="formErrors.name ? 'error' : '' " :help="formErrors.name">
+    <a-form-item label="Name movie" name="name" v-bind="validateInfos.name">
       <a-input v-model:value="formState.name" />
     </a-form-item>
-    <a-form-item label="Description" name="description" v-bind="validateInfos.description" :validateStatus="formErrors.description ? 'error' : '' " :help="formErrors.description">
+    <a-form-item label="Description" name="description"  >
       <a-input v-model:value="formState.description" />
     </a-form-item>
-      <a-form-item label="Age：" name="age"  v-bind="validateInfos.age" :validateStatus="formErrors.age ? 'error' : '' " :help="formErrors.age" >
+      <a-form-item label="Age：" name="age"  >
         <a-input-number id="inputNumber" v-model:value="formState.age" :min="6" :max="18" /> 
       </a-form-item>
-      <a-form-item label="Cast: " :validateStatus="formErrors.casts ? 'error' : '' " :help="formErrors.casts">
+      <a-form-item label="Cast: " >
         <a-select
         v-model:value="formState.casts"
         mode="tags"
@@ -23,7 +23,7 @@
         
         ></a-select>
       </a-form-item>
-      <a-form-item label="Director: " :validateStatus="formErrors.directors ? 'error' : '' " :help="formErrors.directors">
+      <a-form-item label="Director: " >
         <a-select
         v-model:value="formState.directors"
         mode="tags"
@@ -34,7 +34,7 @@
        
         ></a-select>
       </a-form-item>
-      <a-form-item label="Producer: " :validateStatus="formErrors.producers ? 'error' : '' " :help="formErrors.producers">
+      <a-form-item label="Producer: " >
         <a-select 
           v-model:value="formState.producers" 
           mode="tags" style="width: 100%" 
@@ -43,7 +43,7 @@
           :options="optionProducer">
         </a-select>
       </a-form-item>
-      <a-form-item label="Release Time:" name="releaseTime" :validateStatus="formErrors.releaseTime ? 'error' : '' " :help="formErrors.releaseTime">
+      <a-form-item label="Release Time:" name="releaseTime" >
         <a-space direction="vertical" :size="12">
           <a-date-picker v-model:value="formState.releaseTime" />
         </a-space>
@@ -61,6 +61,11 @@
       </a-upload>
       </a-form-item>
   </a-form>
+  <div class="form_errors" v-if="formErrors.length > 0">
+    <ul>
+      <li v-for="errorItem in formErrors" :key=" errorItem.key">{{ errorItem.message }}</li>
+    </ul>
+  </div>
 </template>
 <script lang="ts">
   import { defineComponent, ref, inject, onBeforeMount } from 'vue'
