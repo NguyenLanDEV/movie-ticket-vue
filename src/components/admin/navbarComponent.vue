@@ -5,7 +5,8 @@
         mode="horizontal"
         :style="{ lineHeight: '64px' }"
       >
-        <a-menu-item key="MoviePage">Movie</a-menu-item>
+        <a-menu-item key="MoviePage"><router-link to="/admin/movie">Movie</router-link></a-menu-item>
+        <a-menu-item key="CinemaPage"> <router-link to="/admin/cinema">Cinema</router-link> </a-menu-item>
         <a-menu-item key="SeatPage">Seat</a-menu-item>
         <a-menu-item key="UserPage">User</a-menu-item>
       </a-menu>
