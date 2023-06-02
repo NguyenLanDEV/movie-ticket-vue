@@ -48,6 +48,11 @@
           <a-date-picker v-model:value="formState.releaseTime" />
         </a-space>
       </a-form-item>
+      <a-form-item label="Duration:" name="duration" v-bind="validateInfos.duration">
+      <a-space direction="vertical" >
+        <a-input-number v-model:value="formState.duration" :min="1"/>
+        </a-space>
+      </a-form-item>
       <a-form-item label="Upload Image：">
         <a-upload
         name="file"
@@ -92,6 +97,7 @@ import type { Movie, MovieUpdateRequest } from '@/type/Movie.type';
         directors: [],
         producers: [],
         releaseTime: null,
+        duration: 1,
       })
       const optionCast = ref<SelectProps['options']>([ ]);
       const optionDirector = ref<SelectProps['options']>([]);

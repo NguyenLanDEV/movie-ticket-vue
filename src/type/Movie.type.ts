@@ -28,6 +28,7 @@ interface MovieCreateRequest {
   producers: string[]
   age: number
   releaseTime: any
+  duration: number
 }
 
 interface MovieUpdateRequest extends MovieCreateRequest {

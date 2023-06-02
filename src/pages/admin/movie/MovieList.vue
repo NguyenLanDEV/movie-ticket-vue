@@ -24,7 +24,7 @@
         <div class="editable-row-operations">
           <span>
             <a @click="edit(record._id)">Edit</a>
-            <a-popconfirm v-if="dataSource.length" title="Sure to delete?" @confirm="onDelete(record.key)">
+            <a-popconfirm v-if="dataSource.length" title="Sure to delete?" @confirm="onDelete(record._id)">
               <a>Delete</a>
             </a-popconfirm>
           </span>
@@ -145,7 +145,7 @@ export default defineComponent({
     };
     /* Function
     =================*/
-    const openNotificationWithIcon = (type: IconType, title: string, description: string) => {
+    const openNotificationWithIcon = (type: IconType, title: string, description?: string) => {
       notification.open({
         message: title,
         description: description,
@@ -164,10 +164,14 @@ export default defineComponent({
     const onDelete = async (key: string) => {
       // dataSource.value = dataSource.value.filter((item) => item.key !== key)
       try {
-        // const response = await deleteMovie(key)
-        openNotificationWithIcon('success', 'delete success','')
-      } catch (error) {
-        console.log("delete::" + error);
+        const response = await deleteMovie(key)
+        openNotificationWithIcon('success', 'delete success')
+      } catch (error: any) {
+        if(error.status != 500){
+          openNotificationWithIcon('error', error.message)
+        }else {
+          openNotificationWithIcon('error', "Request Error!")
+        }
       }
     }
 

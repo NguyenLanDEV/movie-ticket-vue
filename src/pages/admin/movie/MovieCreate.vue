@@ -27,6 +27,11 @@
         <a-date-picker v-model:value="formState.releaseTime" />
       </a-space>
     </a-form-item>
+    <a-form-item label="Duration:" name="duration" v-bind="validateInfos.duration">
+      <a-space direction="vertical" >
+        <a-input-number v-model:value="formState.duration" />
+      </a-space>
+    </a-form-item>
     <a-form-item label="Upload Image：">
       <a-upload v-model:file-list="fileList" name="file" action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
         :headers="headers" @change="handleChangeImage">
@@ -64,6 +69,7 @@ export default defineComponent({
       directors: [],
       producers: [],
       releaseTime: null,
+      duration: 1,
     })
     const fileList = ref([]);
     const optionCast = ref<SelectProps['options']>([]);

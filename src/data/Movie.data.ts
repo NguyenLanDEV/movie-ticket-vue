@@ -35,7 +35,7 @@ const updateMovie = async (params: MovieUpdateRequest): Promise<ApiResponse<Movi
 
 const deleteMovie = async (id: string): Promise<ApiResponse<any>> => {
   const url = endPoint+"/"+id
-  return await ApiHelper.execute({endpoint: endPoint, method: "DELETE"})
+  return await ApiHelper.execute({endpoint: url, method: "DELETE"})
 }
 
 export { getMovieList, createMovie, updateMovie, deleteMovie, getMovie }
