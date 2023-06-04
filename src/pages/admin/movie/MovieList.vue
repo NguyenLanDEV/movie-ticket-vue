@@ -1,9 +1,4 @@
 <template>
-  <a-layout-header :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
-    <div class="logo" />
-    <NavbarComponent page="MoviePage"></NavbarComponent>
-  </a-layout-header>
-
   <a-layout-content :style="{ padding: '0 50px', marginTop: '64px' }">
     <a-breadcrumb :style="{ margin: '16px 0' }">
       <a-breadcrumb-item>Home</a-breadcrumb-item>
@@ -49,17 +44,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount,  ref, toRaw, provide, } from 'vue'
+import { defineComponent, onBeforeMount,  ref, toRaw,  } from 'vue'
 import MovieCreate from './MovieCreate.vue'
 import MovieUpdate from './MovieUpdate.vue'
 import { useModalStore } from '@/stores/modal'
 import { createMovie, getMovieList, updateMovie, deleteMovie } from '@/data/Movie.data'
-import { getMetadata } from '@/data/metadata.data'
 import { notification } from 'ant-design-vue';
 import NavbarComponent from "@/components/admin/navbarComponent.vue"
 import type { MovieComponentRef, MovieCreateRequest, MovieUpdateRequest } from '@/type/Movie.type'
 import type { Rule } from 'ant-design-vue/es/form';
 import type { IconType } from 'ant-design-vue/lib/notification/index'
+
 
 const columns = [
   {
@@ -82,14 +77,6 @@ const columns = [
     dataIndex: 'operation'
   }
 ]
-interface DataItem {
-  _id: string
-  name: string
-  age: number
-  image: string
-  description: string
-  releaseTime: Date
-}
 
 export default defineComponent({
   components: {
@@ -101,7 +88,6 @@ export default defineComponent({
     const modalStore = useModalStore()
     const createComponent = ref<MovieComponentRef<any>>();
     const updateComponent = ref<MovieComponentRef<any>>();
-    const metadata = ref();
     // register dialog
     const dialog = modalStore.registerModal("Add", 'CREATE')
     const updateDialog = modalStore.registerModal('Update movie', 'EDIT')
@@ -176,7 +162,7 @@ export default defineComponent({
     const onDelete = async (key: string) => {
       // dataSource.value = dataSource.value.filter((item) => item.key !== key)
       try {
-        const response = await deleteMovie(key)
+        await deleteMovie(key)
         openNotificationWithIcon('success', 'delete success')
       } catch (error: any) {
         if (error.status != 500) {
@@ -242,12 +228,6 @@ export default defineComponent({
         loading.value = false
       }
     }
-
-    const handleCancel = () => {
-      // visibleModal.value = false
-    }
-
-    provide('metadata', metadata)
     /* Life circle
     =================*/
     onBeforeMount(() => {
@@ -256,12 +236,6 @@ export default defineComponent({
       })
     })
 
-    onBeforeMount(() => {
-      getMetadata().then(response => {
-        metadata.value = response
-      })
-
-    });
 
     return {
       dataSource,
@@ -281,7 +255,7 @@ export default defineComponent({
       onDelete,
       submitCreateEvent,
       submitUpdateEvent,
-      handleCancel,
+      
     }
   }
 })
