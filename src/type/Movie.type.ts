@@ -7,6 +7,7 @@ interface Movie {
   directors: string[]
   producers: string[]
   age: number
+  duration: number
   releaseTime: Date | any
 }
 

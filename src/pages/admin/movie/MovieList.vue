@@ -80,7 +80,7 @@ const columns = [
 
 export default defineComponent({
   components: {
-    MovieCreate, MovieUpdate, NavbarComponent
+    MovieCreate, MovieUpdate
   },
   setup() {
     const loading = ref<boolean>(false)

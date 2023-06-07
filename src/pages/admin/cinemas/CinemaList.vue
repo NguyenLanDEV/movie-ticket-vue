@@ -15,8 +15,8 @@
             </template>
           </a-modal>
   
-          <a-modal v-model:visible="updateDialog.visible" :title="updateDialog.title" width="800px" :key="movieId">
-            <CinemaUpdate ref="updateComponent" :rules="rulesUpdate"  :formErrors="formErrors">
+          <a-modal v-model:visible="updateDialog.visible" :title="updateDialog.title" width="800px" :key="cinemaId">
+            <CinemaUpdate ref="updateComponent" :rules="rulesUpdate"  :formErrors="formErrors" :cinemaId="cinemaId">
             </CinemaUpdate>
             <template #footer>
               <a-button key="back" @click="updateDialog.closeModal()">Return</a-button>
@@ -46,12 +46,12 @@
   <script lang="ts">
   import { defineComponent, onBeforeMount,  ref, toRaw,  } from 'vue'
   import { useModalStore } from '@/stores/modal'
-  import { notification } from 'ant-design-vue';
+  import { message } from 'ant-design-vue';
   import CinemaUpdate from "./CinemaUpdate.vue"
   import CinemaCreate from "./CinemaCreate.vue"
-  import {getCinemaList} from "@/data/Cinema.data"
+  import {getCinemaList, createCinema, deleteCinema, updateCinema} from "@/data/Cinema.data"
+  import {TypeError} from "@/util/common"
   import type { Rule } from 'ant-design-vue/es/form';
-  import type { IconType } from 'ant-design-vue/lib/notification/index'
   
   const columns = [
     {
@@ -116,66 +116,57 @@
           return Promise.resolve();
         }
       };
-      let validateAge = async (_rule: Rule, age: number) => {
-        if (age < 6 || age > 18) {
-          return Promise.reject("Please age between 6 and 18")
-        } else if (age % 1 > 0) {
-          return Promise.reject('Please enter a positive integer');
-        } else {
-          return Promise.resolve();
-        }
-      };
-      let validateReleaseTime = async (_rule: Rule, releaseTime: any) => {
-        let now = Date.now()
-        if (!releaseTime) {
-          return Promise.reject('Please choose release time');
-        }
-        if (releaseTime < now) {
-          return Promise.reject('Release time must large now');
+      let validatePhone = async (_rule: Rule, phone: string) => {
+        let isValid: boolean = /^(84|0)+([0-9]{8,9})\b/g.test(phone);
+        if(!isValid){
+          return Promise.reject('Please input the *phone again');
         }
         return Promise.resolve();
       };
+      let validateEmail = async (_rule: Rule, phone: string) => {
+        let isValid: boolean = /^\S+@\S+\.\S+$/.test(phone);
+        if(!isValid){
+          return Promise.reject('Please input the *email again');
+        }
+        return Promise.resolve();
+      };
+
   
       const rules: Record<string, Rule[]> = {
         name: [{ required: true, validator: validateName, trigger: 'change' }],
         description: [{ required: true, validator: validateDescription, trigger: 'change' }],
-        age: [{ validator: validateAge, trigger: 'change' }],
-        releaseTime: [{ validator: validateReleaseTime, trigger: 'change' }],
+        address: [{ required: true, message: "Please input the *address again", trigger: 'change' }],
+        phone: [{ validator: validatePhone, trigger: 'change' }],
+        email: [{ validator: validateEmail, trigger: 'change' }],
+        clusterId: [{required: true, message:"please choose again", trigger: 'change' }],
       };
   
       const rulesUpdate: Record<string, Rule[]> = {
         name: [{ required: true, validator: validateName, trigger: 'change' }],
         description: [{ required: true, validator: validateDescription, trigger: 'change' }],
-        age: [{ validator: validateAge, trigger: 'change' }],
+        address: [{ required: true, message: "Please input the *address again", trigger: 'change' }],
+        phone: [{ validator: validatePhone, trigger: 'change' }],
+        email: [{ validator: validateEmail, trigger: 'change' }],
+        clusterId: [{ message:"please choose again", trigger: 'change' }],
       };
       /* Function
       =================*/
-      const openNotificationWithIcon = (type: IconType, title: string, description?: string) => {
-        notification.open({
-          message: title,
-          description: description,
-          type: type,
-          duration: 1.5
-        })
-      };
   
-      const movieId = ref();
+      const cinemaId = ref();
       const edit = (id: string) => {
-        movieId.value = id
+        cinemaId.value = id
         formErrors.value = []
         updateDialog.value.showModal()
       }
   
       const onDelete = async (key: string) => {
-        // dataSource.value = dataSource.value.filter((item) => item.key !== key)
         try {
-          openNotificationWithIcon('success', 'delete success')
+          await deleteCinema(key)
+          const removeIndex = dataSource.value.findIndex((item: any) => item._id == key)
+          dataSource.value.splice(removeIndex, 1)
+          message.success('delete success')
         } catch (error: any) {
-          if (error.status != 500) {
-            openNotificationWithIcon('error', error.message)
-          } else {
-            openNotificationWithIcon('error', "Request Error!")
-          }
+          handleError(error)
         }
       }
   
@@ -185,19 +176,16 @@
         try {
           loading.value = true
           formErrors.value = []
-          const formData = toRaw<any>(createComponent.value.formState)
-          await createComponent.value.validateDialog()
-      
-  
-        } catch (error: any) {
-          if (error?.error == 'validation-001') {
-            error.metadata.forEach((error: any) => {
-              formErrors.value.push({ key: error.context.key, message: error.message })
-            })
-          }
+          const formData = {...createComponent.value.formState}
+          await createComponent.value.validate()
+          const rs= await createCinema(formData)
+          dataSource.value.push(rs.metadata)
+          dialog.value.closeModal()
+          message.success("create success")
+        } catch (error: any) {          
+          handleError(error)
         } finally {
           loading.value = false
-  
         }
       }
   
@@ -206,24 +194,37 @@
           return
         try {
           loading.value = true
+          const data = toRaw(updateComponent.value.formState)
           formErrors.value = []
-     
+          await updateCinema(data)
+          const indexOf= dataSource.value.findIndex((item: any) => item._id == cinemaId.value)
+          dataSource.value[indexOf] = {...data}
+          updateDialog.value.closeModal()
+          message.success('update success')
         } catch (error: any) {
-          if (error?.error == 'validation-001') {
-            error.metadata.forEach((error: any) => {
-              formErrors.value.push(error.message)
-            })
-          }
-  
+          handleError(error)
         } finally {
           loading.value = false
         }
       }
-  
-      const handleCancel = () => {
-        // visibleModal.value = false
-      }
       
+
+      function handleError(error: any){
+        if (error?.error == TypeError.Validate) {
+            error.metadata.forEach((error: any) => {
+              formErrors.value.push({ key: error.context.key, message: error.message })
+            })
+        }else if(error?.error == TypeError.Authenticate){
+          console.log("need login");
+        }else if(error?.error == TypeError.TokenExpired){
+          console.log('expired token');
+        }else if(error?.errorFields){
+          //
+        }else{
+          message.error("Request Error!")
+        }
+      }
+    
       /* Life circle
       =================*/
       onBeforeMount(() => {
@@ -242,15 +243,13 @@
         updateComponent,
         rules,
         rulesUpdate,
-        movieId,
+        cinemaId,
         updateDialog,
         formErrors,
-        openNotificationWithIcon,
         edit,
         onDelete,
         submitCreateEvent,
         submitUpdateEvent,
-        handleCancel,
       }
     }
   })
